@@ -1,9 +1,11 @@
 {
   "name": "athena",
+  "description": "Backend for Trellis, an open-source employee performance management platform. Alternative to Lattice, Culture Amp, etc.",
   "scripts": {
     "dev": "tsx watch src/index.ts"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.2.10",
     "@hono/node-server": "^1.13.1",
     "drizzle-orm": "^0.33.0",
     "hono": "^4.6.3",
