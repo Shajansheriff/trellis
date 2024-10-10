@@ -13,40 +13,24 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as LoginImport } from './routes/login'
-import { Route as HomeImport } from './routes/home'
-import { Route as ForgotPasswordImport } from './routes/forgot-password'
-import { Route as LayoutImport } from './routes/_layout'
 import { Route as IndexImport } from './routes/index'
+import { Route as authLoginImport } from './routes/(auth)/login'
+import { Route as authForgotPasswordImport } from './routes/(auth)/forgot-password'
+import { Route as appAppImport } from './routes/(app)/_app'
+import { Route as appAppReviewsImport } from './routes/(app)/_app/reviews'
+import { Route as appAppHomeImport } from './routes/(app)/_app/home'
+import { Route as appAppprofileProfileIndexImport } from './routes/(app)/_app/(profile)/profile/index'
+import { Route as appAppprofileProfileDetailsImport } from './routes/(app)/_app/(profile)/profile/details'
 
 // Create Virtual Routes
 
-const SignupLazyImport = createFileRoute('/signup')()
+const appImport = createFileRoute('/(app)')()
+const authSignupLazyImport = createFileRoute('/(auth)/signup')()
 
 // Create/Update Routes
 
-const SignupLazyRoute = SignupLazyImport.update({
-  path: '/signup',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/signup.lazy').then((d) => d.Route))
-
-const LoginRoute = LoginImport.update({
-  path: '/login',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const HomeRoute = HomeImport.update({
-  path: '/home',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ForgotPasswordRoute = ForgotPasswordImport.update({
-  path: '/forgot-password',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const LayoutRoute = LayoutImport.update({
-  id: '/_layout',
+const appRoute = appImport.update({
+  id: '/(app)',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -54,6 +38,49 @@ const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
 } as any)
+
+const authSignupLazyRoute = authSignupLazyImport
+  .update({
+    path: '/signup',
+    getParentRoute: () => rootRoute,
+  } as any)
+  .lazy(() => import('./routes/(auth)/signup.lazy').then((d) => d.Route))
+
+const authLoginRoute = authLoginImport.update({
+  path: '/login',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const authForgotPasswordRoute = authForgotPasswordImport.update({
+  path: '/forgot-password',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const appAppRoute = appAppImport.update({
+  id: '/_app',
+  getParentRoute: () => appRoute,
+} as any)
+
+const appAppReviewsRoute = appAppReviewsImport.update({
+  path: '/reviews',
+  getParentRoute: () => appAppRoute,
+} as any)
+
+const appAppHomeRoute = appAppHomeImport.update({
+  path: '/home',
+  getParentRoute: () => appAppRoute,
+} as any)
+
+const appAppprofileProfileIndexRoute = appAppprofileProfileIndexImport.update({
+  path: '/profile/',
+  getParentRoute: () => appAppRoute,
+} as any)
+
+const appAppprofileProfileDetailsRoute =
+  appAppprofileProfileDetailsImport.update({
+    path: '/profile/details',
+    getParentRoute: () => appAppRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -66,106 +93,185 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/_layout': {
-      id: '/_layout'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof LayoutImport
+    '/(app)': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof appImport
       parentRoute: typeof rootRoute
     }
-    '/forgot-password': {
+    '/(app)/_app': {
+      id: '/_app'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof appAppImport
+      parentRoute: typeof appRoute
+    }
+    '/(auth)/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
       fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordImport
+      preLoaderRoute: typeof authForgotPasswordImport
       parentRoute: typeof rootRoute
     }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeImport
-      parentRoute: typeof rootRoute
-    }
-    '/login': {
+    '/(auth)/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof LoginImport
+      preLoaderRoute: typeof authLoginImport
       parentRoute: typeof rootRoute
     }
-    '/signup': {
+    '/(auth)/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
-      preLoaderRoute: typeof SignupLazyImport
+      preLoaderRoute: typeof authSignupLazyImport
       parentRoute: typeof rootRoute
+    }
+    '/(app)/_app/home': {
+      id: '/_app/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof appAppHomeImport
+      parentRoute: typeof appAppImport
+    }
+    '/(app)/_app/reviews': {
+      id: '/_app/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof appAppReviewsImport
+      parentRoute: typeof appAppImport
+    }
+    '/(app)/_app/(profile)/profile/details': {
+      id: '/_app/profile/details'
+      path: '/profile/details'
+      fullPath: '/profile/details'
+      preLoaderRoute: typeof appAppprofileProfileDetailsImport
+      parentRoute: typeof appAppImport
+    }
+    '/(app)/_app/(profile)/profile/': {
+      id: '/_app/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof appAppprofileProfileIndexImport
+      parentRoute: typeof appAppImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface appAppRouteChildren {
+  appAppHomeRoute: typeof appAppHomeRoute
+  appAppReviewsRoute: typeof appAppReviewsRoute
+  appAppprofileProfileDetailsRoute: typeof appAppprofileProfileDetailsRoute
+  appAppprofileProfileIndexRoute: typeof appAppprofileProfileIndexRoute
+}
+
+const appAppRouteChildren: appAppRouteChildren = {
+  appAppHomeRoute: appAppHomeRoute,
+  appAppReviewsRoute: appAppReviewsRoute,
+  appAppprofileProfileDetailsRoute: appAppprofileProfileDetailsRoute,
+  appAppprofileProfileIndexRoute: appAppprofileProfileIndexRoute,
+}
+
+const appAppRouteWithChildren =
+  appAppRoute._addFileChildren(appAppRouteChildren)
+
+interface appRouteChildren {
+  appAppRoute: typeof appAppRouteWithChildren
+}
+
+const appRouteChildren: appRouteChildren = {
+  appAppRoute: appAppRouteWithChildren,
+}
+
+const appRouteWithChildren = appRoute._addFileChildren(appRouteChildren)
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '': typeof LayoutRoute
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/home': typeof HomeRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupLazyRoute
+  '/': typeof appAppRouteWithChildren
+  '/forgot-password': typeof authForgotPasswordRoute
+  '/login': typeof authLoginRoute
+  '/signup': typeof authSignupLazyRoute
+  '/home': typeof appAppHomeRoute
+  '/reviews': typeof appAppReviewsRoute
+  '/profile/details': typeof appAppprofileProfileDetailsRoute
+  '/profile': typeof appAppprofileProfileIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '': typeof LayoutRoute
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/home': typeof HomeRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupLazyRoute
+  '/': typeof appAppRouteWithChildren
+  '/forgot-password': typeof authForgotPasswordRoute
+  '/login': typeof authLoginRoute
+  '/signup': typeof authSignupLazyRoute
+  '/home': typeof appAppHomeRoute
+  '/reviews': typeof appAppReviewsRoute
+  '/profile/details': typeof appAppprofileProfileDetailsRoute
+  '/profile': typeof appAppprofileProfileIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/_layout': typeof LayoutRoute
-  '/forgot-password': typeof ForgotPasswordRoute
-  '/home': typeof HomeRoute
-  '/login': typeof LoginRoute
-  '/signup': typeof SignupLazyRoute
+  '/': typeof appRouteWithChildren
+  '/_app': typeof appAppRouteWithChildren
+  '/forgot-password': typeof authForgotPasswordRoute
+  '/login': typeof authLoginRoute
+  '/signup': typeof authSignupLazyRoute
+  '/_app/home': typeof appAppHomeRoute
+  '/_app/reviews': typeof appAppReviewsRoute
+  '/_app/profile/details': typeof appAppprofileProfileDetailsRoute
+  '/_app/profile/': typeof appAppprofileProfileIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/forgot-password' | '/home' | '/login' | '/signup'
+  fullPaths:
+    | '/'
+    | '/forgot-password'
+    | '/login'
+    | '/signup'
+    | '/home'
+    | '/reviews'
+    | '/profile/details'
+    | '/profile'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/forgot-password' | '/home' | '/login' | '/signup'
+  to:
+    | '/'
+    | '/forgot-password'
+    | '/login'
+    | '/signup'
+    | '/home'
+    | '/reviews'
+    | '/profile/details'
+    | '/profile'
   id:
     | '__root__'
     | '/'
-    | '/_layout'
+    | '/_app'
     | '/forgot-password'
-    | '/home'
     | '/login'
     | '/signup'
+    | '/_app/home'
+    | '/_app/reviews'
+    | '/_app/profile/details'
+    | '/_app/profile/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  LayoutRoute: typeof LayoutRoute
-  ForgotPasswordRoute: typeof ForgotPasswordRoute
-  HomeRoute: typeof HomeRoute
-  LoginRoute: typeof LoginRoute
-  SignupLazyRoute: typeof SignupLazyRoute
+  appRoute: typeof appRouteWithChildren
+  authForgotPasswordRoute: typeof authForgotPasswordRoute
+  authLoginRoute: typeof authLoginRoute
+  authSignupLazyRoute: typeof authSignupLazyRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  LayoutRoute: LayoutRoute,
-  ForgotPasswordRoute: ForgotPasswordRoute,
-  HomeRoute: HomeRoute,
-  LoginRoute: LoginRoute,
-  SignupLazyRoute: SignupLazyRoute,
+  appRoute: appRouteWithChildren,
+  authForgotPasswordRoute: authForgotPasswordRoute,
+  authLoginRoute: authLoginRoute,
+  authSignupLazyRoute: authSignupLazyRoute,
 }
 
 export const routeTree = rootRoute
@@ -181,30 +287,52 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/_layout",
+        "/",
         "/forgot-password",
-        "/home",
         "/login",
         "/signup"
       ]
     },
     "/": {
-      "filePath": "index.tsx"
+      "filePath": "(app)",
+      "children": [
+        "/_app"
+      ]
     },
-    "/_layout": {
-      "filePath": "_layout.tsx"
+    "/_app": {
+      "filePath": "(app)/_app.tsx",
+      "parent": "/",
+      "children": [
+        "/_app/home",
+        "/_app/reviews",
+        "/_app/profile/details",
+        "/_app/profile/"
+      ]
     },
     "/forgot-password": {
-      "filePath": "forgot-password.tsx"
-    },
-    "/home": {
-      "filePath": "home.tsx"
+      "filePath": "(auth)/forgot-password.tsx"
     },
     "/login": {
-      "filePath": "login.tsx"
+      "filePath": "(auth)/login.tsx"
     },
     "/signup": {
-      "filePath": "signup.lazy.tsx"
+      "filePath": "(auth)/signup.lazy.tsx"
+    },
+    "/_app/home": {
+      "filePath": "(app)/_app/home.tsx",
+      "parent": "/_app"
+    },
+    "/_app/reviews": {
+      "filePath": "(app)/_app/reviews.tsx",
+      "parent": "/_app"
+    },
+    "/_app/profile/details": {
+      "filePath": "(app)/_app/(profile)/profile/details.tsx",
+      "parent": "/_app"
+    },
+    "/_app/profile/": {
+      "filePath": "(app)/_app/(profile)/profile/index.tsx",
+      "parent": "/_app"
     }
   }
 }
