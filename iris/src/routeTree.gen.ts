@@ -18,6 +18,7 @@ import { Route as authLoginImport } from './routes/(auth)/login'
 import { Route as authForgotPasswordImport } from './routes/(auth)/forgot-password'
 import { Route as appAppImport } from './routes/(app)/_app'
 import { Route as appAppReviewsImport } from './routes/(app)/_app/reviews'
+import { Route as appAppReviewTemplatesImport } from './routes/(app)/_app/review-templates'
 import { Route as appAppHomeImport } from './routes/(app)/_app/home'
 import { Route as appAppprofileProfileIndexImport } from './routes/(app)/_app/(profile)/profile/index'
 import { Route as appAppprofileProfileDetailsImport } from './routes/(app)/_app/(profile)/profile/details'
@@ -63,6 +64,11 @@ const appAppRoute = appAppImport.update({
 
 const appAppReviewsRoute = appAppReviewsImport.update({
   path: '/reviews',
+  getParentRoute: () => appAppRoute,
+} as any)
+
+const appAppReviewTemplatesRoute = appAppReviewTemplatesImport.update({
+  path: '/review-templates',
   getParentRoute: () => appAppRoute,
 } as any)
 
@@ -135,6 +141,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appAppHomeImport
       parentRoute: typeof appAppImport
     }
+    '/(app)/_app/review-templates': {
+      id: '/_app/review-templates'
+      path: '/review-templates'
+      fullPath: '/review-templates'
+      preLoaderRoute: typeof appAppReviewTemplatesImport
+      parentRoute: typeof appAppImport
+    }
     '/(app)/_app/reviews': {
       id: '/_app/reviews'
       path: '/reviews'
@@ -163,6 +176,7 @@ declare module '@tanstack/react-router' {
 
 interface appAppRouteChildren {
   appAppHomeRoute: typeof appAppHomeRoute
+  appAppReviewTemplatesRoute: typeof appAppReviewTemplatesRoute
   appAppReviewsRoute: typeof appAppReviewsRoute
   appAppprofileProfileDetailsRoute: typeof appAppprofileProfileDetailsRoute
   appAppprofileProfileIndexRoute: typeof appAppprofileProfileIndexRoute
@@ -170,6 +184,7 @@ interface appAppRouteChildren {
 
 const appAppRouteChildren: appAppRouteChildren = {
   appAppHomeRoute: appAppHomeRoute,
+  appAppReviewTemplatesRoute: appAppReviewTemplatesRoute,
   appAppReviewsRoute: appAppReviewsRoute,
   appAppprofileProfileDetailsRoute: appAppprofileProfileDetailsRoute,
   appAppprofileProfileIndexRoute: appAppprofileProfileIndexRoute,
@@ -194,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupLazyRoute
   '/home': typeof appAppHomeRoute
+  '/review-templates': typeof appAppReviewTemplatesRoute
   '/reviews': typeof appAppReviewsRoute
   '/profile/details': typeof appAppprofileProfileDetailsRoute
   '/profile': typeof appAppprofileProfileIndexRoute
@@ -205,6 +221,7 @@ export interface FileRoutesByTo {
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupLazyRoute
   '/home': typeof appAppHomeRoute
+  '/review-templates': typeof appAppReviewTemplatesRoute
   '/reviews': typeof appAppReviewsRoute
   '/profile/details': typeof appAppprofileProfileDetailsRoute
   '/profile': typeof appAppprofileProfileIndexRoute
@@ -218,6 +235,7 @@ export interface FileRoutesById {
   '/login': typeof authLoginRoute
   '/signup': typeof authSignupLazyRoute
   '/_app/home': typeof appAppHomeRoute
+  '/_app/review-templates': typeof appAppReviewTemplatesRoute
   '/_app/reviews': typeof appAppReviewsRoute
   '/_app/profile/details': typeof appAppprofileProfileDetailsRoute
   '/_app/profile/': typeof appAppprofileProfileIndexRoute
@@ -231,6 +249,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/home'
+    | '/review-templates'
     | '/reviews'
     | '/profile/details'
     | '/profile'
@@ -241,6 +260,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/home'
+    | '/review-templates'
     | '/reviews'
     | '/profile/details'
     | '/profile'
@@ -252,6 +272,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_app/home'
+    | '/_app/review-templates'
     | '/_app/reviews'
     | '/_app/profile/details'
     | '/_app/profile/'
@@ -304,6 +325,7 @@ export const routeTree = rootRoute
       "parent": "/",
       "children": [
         "/_app/home",
+        "/_app/review-templates",
         "/_app/reviews",
         "/_app/profile/details",
         "/_app/profile/"
@@ -320,6 +342,10 @@ export const routeTree = rootRoute
     },
     "/_app/home": {
       "filePath": "(app)/_app/home.tsx",
+      "parent": "/_app"
+    },
+    "/_app/review-templates": {
+      "filePath": "(app)/_app/review-templates.tsx",
       "parent": "/_app"
     },
     "/_app/reviews": {
