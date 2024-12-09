@@ -1,4 +1,3 @@
-import { sql } from 'drizzle-orm';
 import {
   pgTable,
   serial,
@@ -6,7 +5,6 @@ import {
   timestamp,
   integer,
   boolean,
-  json,
   pgEnum,
   varchar,
   unique,
@@ -14,6 +12,7 @@ import {
 
 const id = serial('id').primaryKey();
 const created_at = timestamp('created_at').defaultNow();
+const updated_at = timestamp('updated_at');
 
 export const orgs = pgTable('orgs', {
   id,
@@ -39,6 +38,8 @@ export const users = pgTable('users', {
   created_at,
 });
 
+const created_by = integer('created_by').references(() => users.id);
+
 export const departments = pgTable('departments', {
   id,
   name: text('name').notNull(),
@@ -47,8 +48,8 @@ export const departments = pgTable('departments', {
 });
 
 const invitationStatusEnum = pgEnum('invitation_status', ['PENDING', 'ACCEPTED', 'REJECTED']);
-export const invitations = pgTable(
-  'invitations',
+export const user_invites = pgTable(
+  'user_invites',
   {
     id,
     email: varchar('email', { length: 100 }).notNull(),
@@ -58,6 +59,8 @@ export const invitations = pgTable(
     status: invitationStatusEnum('status').default('PENDING'),
     org_id,
     created_at,
+    accepted_at: timestamp('accepted_at'),
+    rejected_at: timestamp('rejected_at'),
   },
   (table) => {
     return {
@@ -74,15 +77,56 @@ export const survey_templates = pgTable(
     title: varchar('title', { length: 100 }).notNull(),
     description: varchar('description', { length: 255 }),
     status: surveyStatusEnum('status').default('DRAFT'),
-    created_by: integer('created_by')
-      .references(() => users.id)
-      .notNull(),
+    created_by: created_by.notNull(),
     org_id,
     created_at,
   },
   (table) => {
     return {
       unique_title_per_org: unique().on(table.title, table.org_id),
+    };
+  },
+);
+
+const questionTypeEnum = pgEnum('question_type', ['RATING', 'TEXT', 'RATING_AND_TEXT']);
+export const question_templates = pgTable(
+  'question_templates',
+  {
+    id,
+    question_text: text('question_text').notNull(),
+    question_type: questionTypeEnum('question_type').notNull().default('RATING'),
+    instructions: text('instructions'),
+    default_value: text('default_value'),
+    required: boolean('required').default(false),
+    org_id,
+    created_at,
+    created_by: created_by.notNull(),
+  },
+  (table) => {
+    return {
+      unique_question_text_per_org: unique().on(table.question_text, table.org_id),
+    };
+  },
+);
+
+export const survey_template_questions = pgTable(
+  'survey_template_questions',
+  {
+    id,
+    survey_template_id: integer('survey_template_id')
+      .references(() => survey_templates.id)
+      .notNull(),
+    question_template_id: integer('question_template_id')
+      .references(() => question_templates.id)
+      .notNull(),
+    created_at,
+  },
+  (table) => {
+    return {
+      unique_survey_template_id_question_template_id: unique().on(
+        table.survey_template_id,
+        table.question_template_id,
+      ),
     };
   },
 );
@@ -94,32 +138,9 @@ export const surveys = pgTable('surveys', {
   template_id: integer('template_id').references(() => survey_templates.id),
   start_date: timestamp('start_date').notNull(),
   end_date: timestamp('end_date').notNull(),
-  created_by: integer('created_by')
-    .references(() => users.id)
-    .notNull(),
   org_id,
   created_at,
-});
-
-const surveyQuestionTypeEnum = pgEnum('survey_question_type', [
-  'RATING',
-  'TEXT',
-  'RATING_AND_TEXT',
-]);
-
-export const survey_question_templates = pgTable('survey_question_templates', {
-  id,
-  survey_template_id: integer('survey_template_id')
-    .references(() => survey_templates.id)
-    .notNull(),
-  question_text: text('question_text').notNull(),
-  instructions: text('instructions'),
-  order: integer('order').notNull(),
-  default_value: text('default_value'),
-  question_type: surveyQuestionTypeEnum('question_type').notNull().default('RATING'),
-  required: boolean('required').default(false),
-  org_id,
-  created_at,
+  created_by: created_by.notNull(),
 });
 
 export const survey_questions = pgTable('survey_questions', {
@@ -127,9 +148,9 @@ export const survey_questions = pgTable('survey_questions', {
   survey_id: integer('survey_id')
     .references(() => surveys.id)
     .notNull(),
-  question_template_id: integer('question_template_id').references(
-    () => survey_question_templates.id,
-  ),
+  question_template_id: integer('question_template_id')
+    .references(() => question_templates.id)
+    .notNull(),
   org_id,
   created_at,
 });
@@ -146,6 +167,8 @@ export const survey_responses = pgTable('survey_responses', {
   created_at,
 });
 
+const ratingEnum = pgEnum('rating', ['1', '2', '3', '4', '5']);
+
 export const survey_answers = pgTable('survey_answers', {
   id,
   response_id: integer('response_id')
@@ -155,7 +178,7 @@ export const survey_answers = pgTable('survey_answers', {
     .references(() => survey_questions.id)
     .notNull(),
   answer: text('answer'),
-  rating: integer('rating'), // For ratings (e.g., 1-5)
+  rating: ratingEnum('rating'), // For ratings (e.g., 1-5)
   org_id,
   created_at,
 });
@@ -165,6 +188,8 @@ export const reviews = pgTable('reviews', {
   employee_id: integer('employee_id')
     .references(() => users.id)
     .notNull(),
+  title: varchar('title', { length: 100 }).notNull(),
+  description: varchar('description', { length: 255 }),
   start_date: timestamp('start_date').notNull(),
   end_date: timestamp('end_date').notNull(),
   extended_end_date: timestamp('extended_end_date'),
@@ -172,34 +197,33 @@ export const reviews = pgTable('reviews', {
   created_at,
 });
 
-// Enum for Review Question Types
-const reviewQuestionTypeEnum = pgEnum('review_question_type', ['text', 'rating']);
+const review_id = integer('review_id')
+  .references(() => reviews.id)
+  .notNull();
+
 export const review_questions = pgTable('review_questions', {
   id,
-  review_id: integer('review_id')
-    .references(() => reviews.id)
-    .notNull(),
-  question_text: text('question_text').notNull(),
-  question_type: reviewQuestionTypeEnum('question_type').notNull(), // 'text', 'rating'
+  review_id,
+  content: text('content').notNull(),
+  question_type: questionTypeEnum('question_type').notNull().default('TEXT'),
   org_id,
   created_at,
 });
 
 export const review_answers = pgTable('review_answers', {
   id,
-  review_id: integer('review_id')
-    .references(() => reviews.id)
-    .notNull(),
+  review_id,
   question_id: integer('question_id')
     .references(() => review_questions.id)
     .notNull(),
   responder_id: integer('responder_id')
     .references(() => users.id)
     .notNull(), // The employee who provides the answer
-  answer_text: text('answer_text'),
-  rating: integer('rating'),
+  content: text('content'),
+  rating: ratingEnum('rating'),
   org_id,
   created_at,
+  updated_at,
 });
 
 // Enum for Feedback Request Status
@@ -218,7 +242,7 @@ export const feedbacks = pgTable('feedbacks', {
     .references(() => users.id)
     .notNull(),
   status: feedbackRequestStatusEnum('status').default('PENDING'), // 'pending', 'completed', 'declined'
-  feedback_text: text('feedback_text'),
+  content: text('content'),
   org_id,
   created_at,
 });
