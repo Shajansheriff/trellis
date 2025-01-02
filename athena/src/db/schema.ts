@@ -38,6 +38,9 @@ export const users = pgTable('users', {
   created_at,
 });
 
+export type UserInsert = typeof users.$inferInsert;
+export type UserSelect = typeof users.$inferSelect;
+
 const created_by = integer('created_by').references(() => users.id);
 
 export const departments = pgTable('departments', {
@@ -71,15 +74,15 @@ export const user_invites = pgTable(
 
 const surveyStatusEnum = pgEnum('survey_status', ['DRAFT', 'PUBLISHED', 'ARCHIVED']);
 export const survey_templates = pgTable(
-  'survey_templates',
+  'survey_tpls',
   {
     id,
     title: varchar('title', { length: 100 }).notNull(),
     description: varchar('description', { length: 255 }),
-    status: surveyStatusEnum('status').default('DRAFT'),
+    status: surveyStatusEnum('status').notNull().default('DRAFT'),
     created_by: created_by.notNull(),
     org_id,
-    created_at,
+    created_at: created_at.notNull(),
   },
   (table) => {
     return {
@@ -87,6 +90,9 @@ export const survey_templates = pgTable(
     };
   },
 );
+
+export type SurveyTemplateInsert = typeof survey_templates.$inferInsert;
+export type SurveyTemplateSelect = typeof survey_templates.$inferSelect;
 
 const questionTypeEnum = pgEnum('question_type', ['RATING', 'TEXT', 'RATING_AND_TEXT']);
 export const question_templates = pgTable(

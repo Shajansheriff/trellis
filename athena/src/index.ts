@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { login } from './routes/auth/login';
 // import { jwt } from 'hono/jwt';
 
 const app = new Hono();
@@ -9,6 +10,10 @@ const app = new Hono();
 // app.use('/api/*', jwt({ secret: process.env.JWT_SECRET! }));
 
 const withPrefix = (path: string) => `/api/v1/${path}`;
+
+// Auth
+app.post(withPrefix('auth/login'), login);
+
 // Organizations
 app.post(withPrefix('organizations'), async (c) => {
   /* Create organization */

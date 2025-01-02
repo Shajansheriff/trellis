@@ -7,4 +7,6 @@ const client = new PGlite();
 
 const db = drizzle(client, { schema });
 
+export type DB = typeof db;
+
 export { db };
